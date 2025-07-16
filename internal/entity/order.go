@@ -1,6 +1,9 @@
 package entity
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type Order struct {
 	ID         string
@@ -36,10 +39,15 @@ func (o *Order) IsValid() error {
 }
 
 func (o *Order) CalculateFinalPrice() error {
+	fmt.Println("Calculating final price...")
+
 	o.FinalPrice = o.Price + o.Tax
 	err := o.IsValid()
 	if err != nil {
+		fmt.Println("Error calculating final price:", err)
 		return err
 	}
+
+	fmt.Println("Final price calculated successfully:", o.FinalPrice)
 	return nil
 }

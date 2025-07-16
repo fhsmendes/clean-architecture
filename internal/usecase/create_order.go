@@ -1,8 +1,10 @@
 package usecase
 
 import (
-	"github.com/devfullcycle/20-CleanArch/internal/entity"
-	"github.com/devfullcycle/20-CleanArch/pkg/events"
+	"fmt"
+
+	"github.com/fhsmendes/clean-architecture/internal/entity"
+	"github.com/fhsmendes/clean-architecture/pkg/events"
 )
 
 type OrderInputDTO struct {
@@ -42,11 +44,15 @@ func (c *CreateOrderUseCase) Execute(input OrderInputDTO) (OrderOutputDTO, error
 		Price: input.Price,
 		Tax:   input.Tax,
 	}
+
 	order.CalculateFinalPrice()
+
+	fmt.Println("Creating order:", &order)
 	if err := c.OrderRepository.Save(&order); err != nil {
 		return OrderOutputDTO{}, err
 	}
 
+	fmt.Println("Order saved successfully:", order)
 	dto := OrderOutputDTO{
 		ID:         order.ID,
 		Price:      order.Price,
