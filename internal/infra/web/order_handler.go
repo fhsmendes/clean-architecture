@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/fhsmendes/clean-architecture/internal/entity"
@@ -49,6 +50,7 @@ func (h *WebOrderHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *WebOrderHandler) List(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Listing orders handler...")
 	orders, err := h.OrderRepository.List()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

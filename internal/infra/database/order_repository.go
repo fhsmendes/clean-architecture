@@ -38,6 +38,8 @@ func (r *OrderRepository) GetTotal() (int, error) {
 }
 
 func (r *OrderRepository) List() ([]*entity.Order, error) {
+	fmt.Println("Listing orders repository...")
+
 	rows, err := r.Db.Query("SELECT id, price, tax, final_price FROM orders")
 	if err != nil {
 		return nil, err
