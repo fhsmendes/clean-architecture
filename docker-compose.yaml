@@ -6,14 +6,29 @@ services:
     container_name: mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: orders
-      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - cmd/ordersystem/.env
     ports:
-      - 3306:3306
+      - ${DB_PORT}:3306
     volumes:
       - .docker/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
 
+  migrations:
+    image: migrate/migrate
+    volumes:
+      - ./sql/migrations:/migrations
+    command: ["-path", "/migrations", "-database", "mysql://${DB_USER}:${DB_PASSWORD}@tcp(mysql:3306)/${DB_NAME}?multiStatements=true", "up"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+  
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq

@@ -15,7 +15,7 @@ Inclua um README.md com os passos a serem executados no desafio e a porta em que
 
 ## Pré-requisitos
 
-- [Go 1.18+](https://go.dev/dl/)
+- [Go 1.23+](https://go.dev/dl/)
 - [Git](https://git-scm.com/)
 - [Docker Desktop (com WSL2 se estiver no Windows)](https://www.docker.com/products/docker-desktop)
 - [VSCode](https://code.visualstudio.com/) com extensão `REST Client` (opcional para testar `.http`)
@@ -38,7 +38,14 @@ Inclua um README.md com os passos a serem executados no desafio e a porta em que
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ```
----
+
+```bash
+# instale o evans para testar o gRPC (se ainda não tiver)
+go install github.com/ktr0731/evans@latest
+
+# com o evans instalado execute (depois de subir a aplicação)
+evans -r repl
+```
 
 #### Wire
 ```bash
@@ -46,6 +53,7 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 go install github.com/google/wire/cmd/wire@latest
 ```
+
 #### Migrate 
 
 ```bash
@@ -54,12 +62,9 @@ go install github.com/google/wire/cmd/wire@latest
 brew install golang-migrate  # macOS
 # ou
 sudo apt install -y migrate  # Ubuntu/Debian (pode requerer repo externo)
-# ou binário:
-curl -L https://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.tar.gz | tar xvz
-sudo mv migrate /usr/local/bin
 ``` 
-
-### 3- Necessário atualizar as dependências:
+---
+### 3 - Necessário atualizar as dependências:
 ```bash
 go mod tidy
 ```
@@ -70,64 +75,49 @@ go mod tidy
 > Certifique-se de estar na raiz do projeto.
 
 ```bash
-docker-compose up -d
+sudo docker-compose --env-file ./cmd/ordersystem/.env up  -d
 ```
 
-Este comando irá iniciar:
-
-- MySQL (porta `3306`)
----
-
-### 5 - Executar as migrations (após o MySQL subir)
-
-```bash
-migrate -path sql/migrations -database "mysql://root:root@tcp(localhost:3306)/orders" up
-```
-
-> Substitua o nome do banco se necessário.
-
----
-
-### 6 - Rodar a aplicação
+### 5 - Rodar a aplicação
 
 ```bash
 go run cmd/ordersystem/main.go wire_gen.go
 ```
-
 ---
 
-##  Testar GraphQL (via arquivo `.http`)
+### 6 Serviços disponiveis
 
-Crie um arquivo `graphql.http`:
+| Serviço   | Porta  | Protocolo | Descrição                           |
+|-----------|--------|-----------|-------------------------------------|
+| REST      | 8000   | HTTP      | Endpoints REST para criação e listagem de orders |
+| GraphQL   | 8080   | HTTP      | Playground e API GraphQL            |
+| gRPC      | 50051  | gRPC      | Interface gRPC da aplicação         |
+| MySQL     | 3306   | TCP       | Banco de dados relacional usado pela aplicação |
 
-```http
-POST http://localhost:8080/query
-Content-Type: application/json
+## Processo manual 
 
-{
-  "query": "{ healthCheck }"
-}
+### Migrations
+
+Executar as migrations (após o MySQL subir)
+
+```bash
+# Somente se não rodar automaticamente a migration`:
+$ migrate -path sql/migrations -database "mysql://root:root@tcp(localhost:3306)/orders" up
+ou
+$ make migrate
 ```
 
-Clique em **"Send Request"** (com a extensão [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)).
-
+> Substitua o nome do banco se necessário.
 ---
 
 ## Comandos úteis
 
 ```bash
 docker-compose down             # Para parar os serviços
-migrate -version                # Ver versão da migration atual
-migrate -rollback               # Rollback da última versão
+make migrate                    # para executar a migration
+make migratedown                # para fazer rollback da migration
 sudo docker exec -it mysql bash # Acessar o container do docker
 mysql -u root -p                # Acessar o my sql dentro do docker
+evans -r repl                   # Executar o Evans para tests
 ```
 ---
-
-evans -r repl
-
-https://github.com/ktr0731/evans
-
-protoc --go_out=. --go-grpc_out=. internal/infra/grpc/protofiles/order.proto
-
-OrdersList
