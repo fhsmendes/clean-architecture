@@ -75,17 +75,21 @@ go mod tidy
 > Certifique-se de estar na raiz do projeto.
 
 ```bash
-sudo docker-compose --env-file ./cmd/ordersystem/.env up  -d
+sudo docker-compose up -d
 ```
+### 5 - Acompanhar inicialização
 
-### 5 - Rodar a aplicação
+Será gerado logs em `/logs/app.log` com o processo de inicialização da aplicação.
+
+> Aguarde até aparecer o start dos servers
 
 ```bash
-go run cmd/ordersystem/main.go wire_gen.go
+Starting web server on port :8000
+Starting gRPC server on port 50051
+Starting GraphQL server on port 8080
 ```
----
 
-### 6 Serviços disponiveis
+### 6 - Serviços disponiveis
 
 | Serviço   | Porta  | Protocolo | Descrição                           |
 |-----------|--------|-----------|-------------------------------------|
@@ -94,21 +98,6 @@ go run cmd/ordersystem/main.go wire_gen.go
 | gRPC      | 50051  | gRPC      | Interface gRPC da aplicação         |
 | MySQL     | 3306   | TCP       | Banco de dados relacional usado pela aplicação |
 
-## Processo manual 
-
-### Migrations
-
-Executar as migrations (após o MySQL subir)
-
-```bash
-# Somente se não rodar automaticamente a migration`:
-$ migrate -path sql/migrations -database "mysql://root:root@tcp(localhost:3306)/orders" up
-ou
-$ make migrate
-```
-
-> Substitua o nome do banco se necessário.
----
 
 ## Comandos úteis
 

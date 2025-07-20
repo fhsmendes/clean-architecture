@@ -1,34 +1,6 @@
-version: '3'
+version: '3.8'
 
 services:
-  mysql:
-    image: mysql:5.7
-    container_name: mysql
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    env_file:
-      - cmd/ordersystem/.env
-    ports:
-      - ${DB_PORT}:3306
-    volumes:
-      - .docker/mysql:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 5s
-      retries: 10
-
-  migrations:
-    image: migrate/migrate
-    volumes:
-      - ./sql/migrations:/migrations
-    command: ["-path", "/migrations", "-database", "mysql://${DB_USER}:${DB_PASSWORD}@tcp(mysql:3306)/${DB_NAME}?multiStatements=true", "up"]
-    depends_on:
-      mysql:
-        condition: service_healthy
-  
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -39,3 +11,35 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: orders
+    ports:
+      - 3306:3306
+    volumes:
+      - .docker/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: app
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    # restart: unless-stopped
+    # command: sh -c "go run main.go wire_gen.go"
+    volumes:
+      - .:/app 
+    command: sh entrypoint.sh
