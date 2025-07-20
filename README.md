@@ -77,7 +77,7 @@ go mod tidy
 ```bash
 sudo docker-compose up -d
 ```
-### 5 Acompanhar inicialização
+### 5 - Acompanhar inicialização
 
 Será gerado logs em `/logs/app.log` com o processo de inicialização da aplicação.
 
@@ -89,7 +89,7 @@ Starting gRPC server on port 50051
 Starting GraphQL server on port 8080
 ```
 
-### 6 Serviços disponiveis
+### 6 - Serviços disponiveis
 
 | Serviço   | Porta  | Protocolo | Descrição                           |
 |-----------|--------|-----------|-------------------------------------|
