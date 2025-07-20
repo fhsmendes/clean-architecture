@@ -29,13 +29,16 @@ func main() {
 		panic(err)
 	}
 
-	db, err := sql.Open(configs.DBDriver, fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", configs.DBUser, configs.DBPassword, configs.DBHost, configs.DBPort, configs.DBName))
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", configs.DBUser, configs.DBPassword, configs.DBHost, configs.DBPort, configs.DBName)
+	fmt.Println("Connecting to database with DSN:", dsn)
+
+	db, err := sql.Open(configs.DBDriver, dsn)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
-	rabbitMQChannel := getRabbitMQChannel()
+	rabbitMQChannel := getRabbitMQChannel(configs.RBMQUser, configs.RBMQPassword, configs.RBMQHost, configs.RBMQPort)
 
 	eventDispatcher := events.NewEventDispatcher()
 	eventDispatcher.Register("OrderCreated", &handler.OrderCreatedHandler{
@@ -76,8 +79,11 @@ func main() {
 	http.ListenAndServe(":"+configs.GraphQLServerPort, nil)
 }
 
-func getRabbitMQChannel() *amqp.Channel {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+func getRabbitMQChannel(RBMQUser, RBMQPassword, RBMQHost, RBMQPort string) *amqp.Channel {
+	dsn := fmt.Sprintf("amqp://%s:%s@%s:%s/", RBMQUser, RBMQPassword, RBMQHost, RBMQPort)
+	fmt.Println("Connecting to RabbitMQ at", dsn)
+
+	conn, err := amqp.Dial(dsn)
 	if err != nil {
 		panic(err)
 	}
